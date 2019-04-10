@@ -1,0 +1,145 @@
+---
+- name: Provision environment to play with BPF
+  hosts: all
+  gather_facts: yes
+  become: yes
+  become_user: root
+  tasks:
+    - name: Add user minicurso
+      user:
+        name: minicurso
+        groups: sudo
+        append: yes
+    - name: Create dir for kernel files
+      file:
+        path: /usr/src/kernel-v5.0
+        state: directory
+    - name: Download kernel v5.0
+      get_url:
+        url: "{{ item }}"
+        dest: /usr/src/kernel-v5.0/
+      loop:
+        - "https://kernel.ubuntu.com/~kernel-ppa/mainline/v5.0/linux-headers-5.0.0-050000_5.0.0-050000.201903032031_all.deb"
+        - "https://kernel.ubuntu.com/~kernel-ppa/mainline/v5.0/linux-headers-5.0.0-050000-generic_5.0.0-050000.201903032031_amd64.deb"
+        - "https://kernel.ubuntu.com/~kernel-ppa/mainline/v5.0/linux-image-unsigned-5.0.0-050000-generic_5.0.0-050000.201903032031_amd64.deb"
+        - "https://kernel.ubuntu.com/~kernel-ppa/mainline/v5.0/linux-modules-5.0.0-050000-generic_5.0.0-050000.201903032031_amd64.deb"
+      when: ansible_kernel is not match("5\.0.*")
+    - name: Install kernel v5.0
+      shell: dpkg -i *.deb
+      args:
+        chdir: /usr/src/kernel-v5.0/
+      register: install_result
+      when: ansible_kernel is not match("5\.0.*")
+    - name: Reboot and wait
+      reboot:
+      when: install_result is changed
+    - name: Get kernel version
+      shell: uname -r
+      register: result
+    - name: Fail if kernel 5.0 is not loaded
+      fail:
+        msg: "Wrong kernel loaded ({{ kernel_version }}}). Expected 5.0"
+      vars:
+        kernel_version: "{{ result.stdout }}"
+      when: kernel_version is not match("5\.0.*")
+    - name: Install dependencies
+      apt:
+        name: "{{ item }}"
+        update_cache: yes # Run 'apt update' before install
+      loop:
+        - make
+        - gcc
+        - g++
+        - pkg-config
+        - libssl-dev
+        - bc
+        - libelf-dev
+        - libcap-dev
+        - gcc-multilib
+        - libncurses5-dev
+        - git
+        - pkg-config
+        - graphviz
+        - llvm
+        - clang
+        - elfutils
+        - libmnl-dev
+        - bison
+        - flex
+        - ifupdown
+        - python-scapy
+        - python-netifaces
+        - binutils-dev
+        - hping3
+        - net-tools
+        - python-pip
+        - autoconf
+        - automake
+        - libtool
+        - unzip
+        - curl
+        - python-twisted
+      tags: install
+    - name: Clone newest iproute2 repo
+      git:
+        repo: https://git.kernel.org/pub/scm/network/iproute2/iproute2-next.git
+        dest: /home/minicurso/iproute2/
+      tags: kernel
+      ignore_errors: yes
+    - name: Install iproute2
+      shell: ./configure && make && make install
+      args:
+        chdir: /home/minicurso/iproute2
+      ignore_errors: yes
+      tags: kernel
+    - name: Clone prototype-kernel project
+      git:
+        repo: https://github.com/netoptimizer/prototype-kernel.git
+        dest: /home/minicurso/prototype-kernel
+      ignore_errors: yes
+      tags: kernel
+    - name: Clone linux kernel net-next tree
+      git:
+        repo: https://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git
+        dest: /home/minicurso/net-next
+        version: v5.0
+        depth: 1 # Reduce commit history to download faster
+      ignore_errors: yes
+      tags: kernel
+    - name: Install bpftool
+      shell: make && make install
+      args:
+        chdir: /home/minicurso/net-next/tools/bpf/bpftool
+      ignore_errors: yes
+      tags: kernel
+    - name: Clone protobuf
+      git:
+        repo: https://github.com/protocolbuffers/protobuf.git
+        dest: /usr/src/protobuf-3.5.0
+        version: v3.5.0
+    - name: Compile protobuf
+      shell: ./autogen.sh && ./configure && make && make check && make install && ldconfig
+      args:
+        chdir: /usr/src/protobuf-3.5.0
+    - name: Clone protobuf-c
+      git:
+        repo: https://github.com/protobuf-c/protobuf-c.git
+        dest: /usr/src/protobuf-c
+        version: v1.3.0
+    - name: Compile protobuf
+      shell: ./autogen.sh && ./configure && make && make install
+      args:
+        chdir: /usr/src/protobuf-c
+    - name: Clone BPFabric
+      git:
+        repo: https://github.com/UofG-netlab/BPFabric
+        dest: /home/minicurso/BPFabric
+    - name: Patch BPFabric to use latest clang instead of clang-3.9
+      replace:
+        path: /home/minicurso/BPFabric/examples/Makefile
+        regexp: 'clang-3\.9'
+        replace: 'clang'
+    - name: Compile BPFabric
+      shell: make
+      args:
+          chdir: /home/minicurso/BPFabric
