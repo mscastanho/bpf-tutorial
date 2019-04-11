@@ -1,6 +1,6 @@
 Vagrant.configure("2") do |config|
-    config.vm.box = "ubuntu/bionic64"
-    config.vm.hostname = "sbrc2019"
+    config.vm.box = "mscastanho/minicurso-ebpf"
+    config.vm.box_version = "1.0"
     config.vm.define "sbrc2019" do |dsfc1|
     end
 
