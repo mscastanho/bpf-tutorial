@@ -1,6 +1,7 @@
 Vagrant.configure("2") do |config|
     config.vm.box = "mscastanho/minicurso-ebpf"
     config.vm.box_version = "1.0"
+    config.vm.hostname = "sbrc2019"
     config.vm.define "sbrc2019" do |dsfc1|
     end
 
@@ -13,6 +14,7 @@ Vagrant.configure("2") do |config|
         vb.name = "#{config.vm.hostname}"
         vb.gui = false
         vb.memory = "2048"
+        vb.customize [ "modifyvm", :id, "--uartmode1", "disconnected" ]
     end
 
     config.vm.provision "ansible" do |ansible|
