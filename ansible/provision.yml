@@ -107,21 +107,34 @@
         chdir: /home/vagrant/net-next/tools/bpf/bpftool
       ignore_errors: yes
       tags: kernel
-    # - name: Clone protobuf
-    #   git:
-    #     repo: https://github.com/protocolbuffers/protobuf.git
-    #     dest: /usr/src/protobuf-3.7.1
-    #     version: v3.7.1
-    # - name: Compile protobuf
-    #   shell: ./autogen.sh && ./configure && make && make check && make install && ldconfig
-    #   args:
-    #     chdir: /usr/src/protobuf-3.7.1
-    # - name: Clone protobuf-c
-    #   git:
-    #     repo: https://github.com/protobuf-c/protobuf-c.git
-    #     dest: /usr/src/protobuf-c
-    #     version: v1.3.1
-    # - name: Compile protobuf
-    #   shell: ./autogen.sh && ./configure && make && make install
-    #   args:
-    #     chdir: /usr/src/protobuf-c
+    - name: Clone protobuf
+      git:
+        repo: https://github.com/protocolbuffers/protobuf.git
+        dest: /usr/src/protobuf-3.5.0
+        version: v3.5.0
+    - name: Compile protobuf
+      shell: ./autogen.sh && ./configure && make && make check && make install && ldconfig
+      args:
+        chdir: /usr/src/protobuf-3.5.0
+    - name: Clone protobuf-c
+      git:
+        repo: https://github.com/protobuf-c/protobuf-c.git
+        dest: /usr/src/protobuf-c
+        version: v1.3.0
+    - name: Compile protobuf
+      shell: ./autogen.sh && ./configure && make && make install
+      args:
+        chdir: /usr/src/protobuf-c
+    - name: Clone BPFabric
+      git:
+        repo: https://github.com/UofG-netlab/BPFabric
+        dest: /home/vagrant/BPFabric
+    - name: Patch BPFabric to use latest clang instead of clang-3.9
+      replace:
+        path: /home/vagrant/BPFabric/examples/Makefile
+        regexp: 'clang-3\.9'
+        replace: 'clang'
+    - name: Compile BPFabric
+      shell: make
+      args:
+          chdir: /home/vagrant/BPFabric
