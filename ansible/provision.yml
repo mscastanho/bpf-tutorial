@@ -5,9 +5,9 @@
   become: yes
   become_user: root
   tasks:
-    - name: Add user minicurso
+    - name: Add user ebpf
       user:
-        name: minicurso
+        name: ebpf
         groups: sudo
         append: yes
     - name: Create dir for kernel files
@@ -83,25 +83,25 @@
     - name: Clone newest iproute2 repo
       git:
         repo: https://git.kernel.org/pub/scm/network/iproute2/iproute2-next.git
-        dest: /home/minicurso/iproute2/
+        dest: /home/ebpf/iproute2/
       tags: kernel
       ignore_errors: yes
     - name: Install iproute2
       shell: ./configure && make && make install
       args:
-        chdir: /home/minicurso/iproute2
+        chdir: /home/ebpf/iproute2
       ignore_errors: yes
       tags: kernel
     - name: Clone prototype-kernel project
       git:
         repo: https://github.com/netoptimizer/prototype-kernel.git
-        dest: /home/minicurso/prototype-kernel
+        dest: /home/ebpf/prototype-kernel
       ignore_errors: yes
       tags: kernel
     - name: Clone linux kernel net-next tree
       git:
         repo: https://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git
-        dest: /home/minicurso/net-next
+        dest: /home/ebpf/net-next
         version: v5.0
         depth: 1 # Reduce commit history to download faster
       ignore_errors: yes
@@ -109,7 +109,7 @@
     - name: Install bpftool
       shell: make && make install
       args:
-        chdir: /home/minicurso/net-next/tools/bpf/bpftool
+        chdir: /home/ebpf/net-next/tools/bpf/bpftool
       ignore_errors: yes
       tags: kernel
     - name: Clone protobuf
@@ -133,13 +133,13 @@
     - name: Clone BPFabric
       git:
         repo: https://github.com/UofG-netlab/BPFabric
-        dest: /home/minicurso/BPFabric
+        dest: /home/ebpf/BPFabric
     - name: Patch BPFabric to use latest clang instead of clang-3.9
       replace:
-        path: /home/minicurso/BPFabric/examples/Makefile
+        path: /home/ebpf/BPFabric/examples/Makefile
         regexp: 'clang-3\.9'
         replace: 'clang'
     - name: Compile BPFabric
       shell: make
       args:
-          chdir: /home/minicurso/BPFabric
+          chdir: /home/ebpf/BPFabric
