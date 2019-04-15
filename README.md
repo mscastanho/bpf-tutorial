@@ -6,4 +6,4 @@ Este repositório contém o material utilizado durante a realização do Minicur
 
 Uma máquina virtual foi especialmente desenvolvida para este tutorial, contendo todo o código e ferramentas necessárias para a execução de cada passo.
 
-- [Download VirtualBox VM]() <-- TODO: Set correct LINK!!!
+- [Download VirtualBox VM](https://homepages.dcc.ufmg.br/~matheus.castanho/minicurso-ebpf-sbrc2019.rar)
