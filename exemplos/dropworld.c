@@ -1,5 +1,5 @@
-#include <linux/bpf.h>
+    #include <linux/bpf.h>
 
 int prog(struct xdp_md *ctx){
-    return XDP_PASS;
+    return XDP_DROP;
 }
