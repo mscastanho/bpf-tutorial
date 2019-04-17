@@ -10,8 +10,8 @@ Uma máquina virtual foi especialmente desenvolvida para este tutorial, contendo
 
 A máquina virtual está equipada com os seguintes itens:
 - kernel v5.0.0
-- iproute2 201903??
-- llvm 6.0
+- iproute2-ss190319
+- llvm 6.0.0
 - bpftool
     
 Além disso, o diretório `/home/ebpf` apresenta cópias locais dos seguintes repositórios:
