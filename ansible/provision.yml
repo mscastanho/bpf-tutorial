@@ -84,20 +84,20 @@
       git:
         repo: https://git.kernel.org/pub/scm/network/iproute2/iproute2-next.git
         dest: /home/ebpf/iproute2/
-      tags: kernel
+      tags: [clone, iproute]
       ignore_errors: yes
     - name: Install iproute2
       shell: ./configure && make && make install
       args:
         chdir: /home/ebpf/iproute2
       ignore_errors: yes
-      tags: kernel
+      tags: iproute
     - name: Clone prototype-kernel project
       git:
         repo: https://github.com/netoptimizer/prototype-kernel.git
         dest: /home/ebpf/prototype-kernel
       ignore_errors: yes
-      tags: kernel
+      tags: clone
     - name: Clone linux kernel net-next tree
       git:
         repo: https://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git
@@ -105,7 +105,7 @@
         version: v5.0
         depth: 1 # Reduce commit history to download faster
       ignore_errors: yes
-      tags: kernel
+      tags: clone
     - name: Install bpftool
       shell: make && make install
       args:
@@ -134,12 +134,15 @@
       git:
         repo: https://github.com/UofG-netlab/BPFabric
         dest: /home/ebpf/BPFabric
+      tags: clone
     - name: Patch BPFabric to use latest clang instead of clang-3.9
       replace:
         path: /home/ebpf/BPFabric/examples/Makefile
         regexp: 'clang-3\.9'
         replace: 'clang'
+      tags: bpfabric
     - name: Compile BPFabric
       shell: make
       args:
           chdir: /home/ebpf/BPFabric
+      tags: bpfabric
