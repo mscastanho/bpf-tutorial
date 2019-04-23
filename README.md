@@ -14,10 +14,26 @@ A máquina virtual está equipada com os seguintes itens:
 - llvm 6.0.0
 - bpftool
     
-Além disso, o diretório `/home/ebpf` apresenta cópias locais dos seguintes repositórios:
+Além de uma cópia deste repositório, o diretório `/home/ebpf` apresenta cópias locais dos seguintes projetos:
 - [Linux kernel net-next](https://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git)
 - [BPFabric](https://github.com/UofG-netlab/BPFabric)
 - [iproute2](https://git.kernel.org/pub/scm/network/iproute2/iproute2-next.git)
 - [prototype-kernel](https://github.com/netoptimizer/prototype-kernel.git)
 
-Além disso, a máquina foi configurada com 2 interfaces de rede, uma no modo NAT (acesso à internet) e outra no modo HostOnly (acesso por SSH). Após importar a máquina, certifique-se de que uma rede HostOnly `vboxnet0` está criada no VirtualBox, sob o menu File > Host Network Manager.
+## Importando a máquina virtual
+
+Os passos a seguir foram testados com o VirtualBox 5.2.18 no Ubuntu.
+
+Após fazer o download da imagem, descompacte o arquivo `.rar`. O arquivo resultante será `minicurso-ebpf-sbrc2019.ova`.
+
+Para importar a VM, acesse o menu `Arquivo > Importar Appliance` e selecione o arquivo `.ova` descompactado.
+
+<img src="./images/vbox-import.png" alt="Importar Appliance" width="500" align="middle">
+
+Em seguida, o VirtualBox permitirá modificações na especificação da máquina, como quantidade de memória RAM (padrão: 4GB).
+
+<img src="./images/vbox-import-2.png" alt="Importar Appliance" width="500" align="middle">
+
+A máquina foi configurada com 2 interfaces de rede, uma no modo NAT (`eth0` - acesso à internet) e outra no modo HostOnly (`eth1` - acesso por SSH). Após a importação, certifique-se de que uma rede HostOnly `vboxnet0` está criada no VirtualBox, sob o menu `Arquivo > Host Network Manager`.
+
+<img src="./images/vbox-net.png" alt="Importar Appliance" width="500" align="middle">
