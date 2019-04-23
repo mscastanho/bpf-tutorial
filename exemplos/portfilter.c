@@ -44,9 +44,9 @@ static __always_inline int process_packet(struct xdp_md *ctx, __u64 off){
 		tcp = data + off;
 		if(tcp + 1 > data_end)
 			return XDP_PASS;
-		
+
 		/* Drop if using port PORT_DROP */
-		if(tcp->source == PORT_DROP || tcp->dest == PORT_DROP)
+		if(tcp->source == bpf_htons(PORT_DROP) || tcp->dest == bpf_htons(PORT_DROP))
 			return XDP_DROP;
 		else
 			return XDP_PASS;
