@@ -151,7 +151,7 @@ Por conta do programa *portfilter.o* o os pacotes serão descartados assim que c
 
 **Extra**: Modifique o arquivo *portfilter.c* para descartar pacotes ICMP (utilizados pela ferramenta `ping`).
 
-## Exemplo 3: Interação com mapas e espaço de usuário
+## Exemplo 3: Mapas e interação com espaço de usuário
 
 Local: `xdp1_kern.c` e `xdp1_user.c` localizados no diretório `samples/bpf/` do código fonte do kernel (`~/net-next/samples/bpf/` na VM).
 
@@ -230,7 +230,8 @@ Output:
     key:
     02 00 00 00
     value (CPU 00): 00 00 00 00 00 00 00 00
-    ... (restante da saída omitido)
+    ... 
+    (restante da saída omitido)
 
 O mapa utilizado é do tipo `BPF_MAP_TYPE_PERCPU_ARRAY`. Como o nome indica, ele apresenta um vetor por CPU utilizada. Na declaração do mapa, o número de elementos foi definido como `256`, portanto a saída do comando `bpftool` acima mostra 256 entradas correspondentes à CPU 0, única da VM.
 
@@ -239,3 +240,174 @@ O mapa utilizado é do tipo `BPF_MAP_TYPE_PERCPU_ARRAY`. Como o nome indica, ele
 ## Exemplo 4: Interação entre camadas XDP e TC
 
 Local: `linux/samples/bpf/`: arquivos `xdp2skb_meta_kern.c` e `xdp2skb_meta.sh`
+
+Este exemplo tem como objetivo demonstrar como as camadas XDP e TC podem interagir por meio do uso de metadados associados a um pacote. O arquivo `xdp2skb_meta_kern.c` contém dois programas distintos, um para ser carregado no XDP e outro no TC, ambos na recepção. Os pacotes recebidos pelo XDP recebem um metadado customizado, que é lido na camada TC. O script `xdp2skb_meta.sh` é utilizado para carregar os programas nos respectivos ganchos e configurar o sistema.
+
+Para auxiliar a análise desses programas, bem como demonstrar uma forma alternativa de depurar programas eBPF, vamos modificar o arquivo `xdp2skb_meta_kern.c` para imprimir mensagens de log após o processamento do pacote em cada camada.
+
+Para isso vamos utilizar a função auxiliar `bpf_trace_printk`. Para facilitar o seu uso, podemos adicionar a seguinte macro ao arquivo:
+
+```c
+// Nicer way to call bpf_trace_printk()
+#define bpf_custom_printk(fmt, ...)                     \
+        ({                                              \
+            char ____fmt[] = fmt;                       \
+            bpf_trace_printk(____fmt, sizeof(____fmt),  \
+                    ##__VA_ARGS__);                     \
+        })
+```
+
+Através dessa macro, podemos utilizar a função `bpf_trace_printk` indiretamente, porém com uma sintaxe similar à função `printf`.
+
+Tendo adicionado a macro, agora podemos utilizá-la para imprimir os valores do metadado nas camadas TC e XDP.
+
+Adicionar ao fim da funçao *_xdp_mark()*:
+
+```c
+SEC("xdp_mark")
+int _xdp_mark(struct xdp_md *ctx)
+{
+    struct meta_info *meta;
+    void *data, *data_end;
+    int ret;
+
+    <...> // código omitido
+
+    meta->mark = 42;
+
+    bpf_custom_printk("[XDP] metadado = %d\n",meta->mark); // <-- Adicionar essa linha
+
+    return XDP_PASS;
+}
+```
+
+Adicionar ao fim da função *_tc_mark*:
+
+```c
+SEC("tc_mark")
+int _tc_mark(struct __sk_buff *ctx)
+{
+    void *data      = (void *)(unsigned long)ctx->data;
+    void *data_end  = (void *)(unsigned long)ctx->data_end;
+    void *data_meta = (void *)(unsigned long)ctx->data_meta;
+    struct meta_info *meta = data_meta;
+
+    <...> // código omitido
+
+    ctx->mark = meta->mark; /* Transfer XDP-mark to SKB-mark */
+
+    bpf_custom_printk("[TC] metadado = %d\n",meta->mark); // <-- Adicionar essa linha
+
+    return TC_ACT_OK;
+}
+```
+
+Porém a função `bpf_trace_printk` exige que os programas que a utilizam sejam declarados com a licença GPL. Caso contrário, o programa será rejeitado pelo verificado durante o carregamento no kernel. A mensagem gerada pelo verificador é a seguinte:
+
+    ebpf@sbrc2019:~/net-next/samples/bpf$ sudo ./xdp2skb_meta.sh --dev eth0                                                                              [16/1675]
+
+    Prog section 'tc_mark' rejected: Invalid argument (22)!
+    - Type:         3
+    - Instructions: 25 (0 over limit)
+    - License:
+
+    Verifier analysis:
+
+    0: (61) r3 = *(u32 *)(r1 +76)
+    1: (61) r2 = *(u32 *)(r1 +140)
+    2: (bf) r4 = r2
+    3: (07) r4 += 4
+    4: (3d) if r3 >= r4 goto pc+3
+    R1=ctx(id=0,off=0,imm=0) R2=pkt_meta(id=0,off=0,r=0,imm=0) R3=pkt(id=0,off=0,r=0,imm=0) R4=pkt_meta(id=0,off=4,r=0,imm=0) R10=fp0,call_-1
+    5: (b7) r2 = 41
+    6: (63) *(u32 *)(r1 +8) = r2
+    7: (05) goto pc+15
+    23: (b7) r0 = 0
+    24: (95) exit
+
+    from 4 to 8: R1=ctx(id=0,off=0,imm=0) R2=pkt_meta(id=0,off=0,r=4,imm=0) R3=pkt(id=0,off=0,r=0,imm=0) R4=pkt_meta(id=0,off=4,r=4,imm=0) R10=fp0,call_-1
+    8: (61) r3 = *(u32 *)(r2 +0)
+    9: (63) *(u32 *)(r1 +8) = r3
+    10: (b7) r1 = 680997
+    11: (63) *(u32 *)(r10 -16) = r1
+    12: (18) r1 = 0x203d206f64616461
+    14: (7b) *(u64 *)(r10 -24) = r1
+    15: (18) r1 = 0x74656d205d43545b
+    17: (7b) *(u64 *)(r10 -32) = r1
+    18: (61) r3 = *(u32 *)(r2 +0)
+    19: (bf) r1 = r10
+    20: (07) r1 += -32
+    21: (b7) r2 = 20
+    22: (85) call bpf_trace_printk#6
+    cannot call GPL-restricted function from non-GPL compatible program
+
+    Error fetching program/map!
+    Unable to load program
+    ERROR: Exec error(1) occurred cmd: "tc filter add dev eth0 ingress prio 1 handle 1 bpf da obj ./xdp2skb_meta_kern.o sec tc_mark"
+
+Para superar essa limitação, precisamos declarar uma variável global especial na seção ELF `license` com essa informação. Basta adicionar a seguinte linha ao fim do arquivo `xdp2skb_meta_kern.c`:
+
+```c
+char _license[] SEC("license") = "GPL";
+```
+
+Por fim, recompilamos o exemplo:
+
+    cd ~/net-next
+    make samples/bpf/
+
+Em seguida, basta executarmos o script `xdp2skb_meta.sh` para carregarmos os programas no kernel:
+
+    ebpf@sbrc2019:~/net-next/samples/bpf$ sudo ./xdp2skb_meta.sh 
+
+    Usage: ./xdp2skb_meta.sh [-vfh] --dev ethX
+    -d | --dev     :             Network device (required)
+    --flush        :             Cleanup flush TC and XDP progs
+    --list         : ($LIST)     List TC and XDP progs
+    -v | --verbose : ($VERBOSE)  Verbose
+    --dry-run      : ($DRYRUN)   Dry-run only (echo commands)
+
+    ERROR: Please specify network device -- required option --dev
+
+Carregando os programas na interface `eth0`:
+
+    ./xdp2skb_meta.sh --dev eth0
+
+Também podemos carregar os programas diretamente, utilizando as ferramentas `ip` para o programa XDP, como feito anteriormente, e `tc` para o programa no gancho TC. Nesse último caso, é necessário criar uma `qdisc` especial no controlador de tráfego do Linux, chamada `clsact`. Todo esse processo pode ser feito utilizando os seguintes comandos:
+
+    tc qdisc add dev eth0 clsact
+    tc filter add dev eth0 ingress bpf da obj xdp2skb_kern.o sec tc_mark
+
+Para mais informações sobre eBPF no gancho TC, confira o comando `man tc-bpf`.
+
+Com os programas carregados em seus respectivos ganchos, podemos analisar as mensagens de log geradas por cada um no arquivo `/sys/kernel/debug/tracing/trace`:
+
+    sudo cat /sys/kernel/debug/tracing/trace
+
+Para fazer uma leitura contínua, utilize o arquivo `trace_pipe`:
+
+    sudo cat /sys/kernel/debug/tracing/trace_pipe
+
+Com os programas eBPF carregados no kernel e com algum tráfego fluindo pela interface, podemos observar as mensagens geradas:
+
+    ebpf@sbrc2019:~/net-next/samples/bpf$ sudo cat /sys/kernel/debug/tracing/trace
+    # tracer: nop
+    #
+    # entries-in-buffer/entries-written: 40/40   #P:1
+    #
+    #                              _-----=> irqs-off
+    #                             / _----=> need-resched
+    #                            | / _---=> hardirq/softirq
+    #                            || / _--=> preempt-depth
+    #                            ||| /     delay
+    #           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
+    #              | |       |   ||||       |         |
+            <idle>-0     [000] ..s. 13699.213984: 0: [XDP] metadado = 42
+            <idle>-0     [000] ..s. 13699.214009: 0: [TC] metadado = 42
+            <idle>-0     [000] ..s. 13699.421529: 0: [XDP] metadado = 42
+            <idle>-0     [000] ..s. 13699.421542: 0: [TC] metadado = 42
+            <idle>-0     [000] ..s. 13704.450195: 0: [XDP] metadado = 42
+            <idle>-0     [000] ..s. 13704.450205: 0: [TC] metadado = 42
+            <idle>-0     [000] ..s. 13704.450216: 0: [XDP] metadado = 42
+
+Pelas mensagens geradas podemos ver que o metadado adicionado no gancho XDP pôde ser recebido pelo programa no gancho TC, efetivamente compartilhando informação entre as duas camadas da pilha do kernel.
