@@ -43,3 +43,24 @@ A máquina foi configurada com 2 interfaces de rede, uma no modo NAT (`eth0` - a
 <p align="center">
     <img src="./images/vbox-net.png" alt="Importar Appliance" width="500" align="middle">
 </p>
+
+## Compilando os exemplos do kernel
+
+O código fonte do kernel apresenta diversos programas de exemplo, disponíveis nos seguintes diretórios:
+    - `samples/bpf`
+    - `tools/testing/selftests/bpf`
+
+Neste minicurso apresentaremos dois exemplos presentes na pasta `samples/bpf`. Para compilá-los, execute os seguintes comandos:
+
+    cd ~/net-next/
+    make headers_install
+    make samples/bpf/
+
+## Compilando os exemplos
+
+Os exemplos fornecidos neste repositório na pasta `exemplos/` estão acompanhados de um Makefile. Para compilá-los:
+
+    cd exemplos/
+    make
+
+**OBS**: As dependências necessárias para a compilação já estão instaladas na máquina virtual, portanto recomendamos compilar os exemplos naquele ambiente.
