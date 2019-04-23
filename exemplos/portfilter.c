@@ -14,11 +14,15 @@
 /* 0x3FFF mask to check for fragment offset field */
 #define IP_FRAGMENTED 65343
 
+/* Port number to be dropped */
+#define PORT_DROP 80
+
 static __always_inline int process_packet(struct xdp_md *ctx, __u64 off){
 
 	void *data_end = (void *)(long)ctx->data_end;
 	void *data = (void *)(long)ctx->data;
 	struct iphdr *iph;
+	struct tcphdr *tcp;
 	__u16 payload_len;
 	__u8 protocol;
 
@@ -36,20 +40,27 @@ static __always_inline int process_packet(struct xdp_md *ctx, __u64 off){
 	if (iph->frag_off & IP_FRAGMENTED)
 		return XDP_PASS;
 
-	/* only accept TCP traffic */
 	if (protocol == IPPROTO_TCP) {
+		tcp = data + off;
+		if(tcp + 1 > data_end)
 			return XDP_PASS;
-	} else if (protocol == IPPROTO_UDP) {
+		
+		/* Drop if using port PORT_DROP */
+		if(tcp->source == PORT_DROP || tcp->dest == PORT_DROP)
 			return XDP_DROP;
-	} else {
+		else
+			return XDP_PASS;
+
+	} else if (protocol == IPPROTO_UDP) {
 		return XDP_PASS;
 	}
 
+	return XDP_PASS;
 }
 
 
-SEC("xdp")
-int select(struct xdp_md *ctx){
+SEC("portfilter")
+int pfilter(struct xdp_md *ctx){
 
 	void *data_end = (void *)(long)ctx->data_end;
 	void *data = (void *)(long)ctx->data;
