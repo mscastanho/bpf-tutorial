@@ -28,12 +28,18 @@ Após fazer o download da imagem, descompacte o arquivo `.rar`. O arquivo result
 
 Para importar a VM, acesse o menu `Arquivo > Importar Appliance` e selecione o arquivo `.ova` descompactado.
 
-<img src="./images/vbox-import.png" alt="Importar Appliance" width="500" align="middle">
+<p align="center">
+    <img src="./images/vbox-import.png" alt="Importar Appliance" width="500" align="middle">
+</p>
 
 Em seguida, o VirtualBox permitirá modificações na especificação da máquina, como quantidade de memória RAM (padrão: 4GB).
 
-<img src="./images/vbox-import-2.png" alt="Importar Appliance" width="500" align="middle">
+<p align="center">
+    <img src="./images/vbox-import-2.png" alt="Importar Appliance" width="500" align="middle">
+</p>
 
 A máquina foi configurada com 2 interfaces de rede, uma no modo NAT (`eth0` - acesso à internet) e outra no modo HostOnly (`eth1` - acesso por SSH). Após a importação, certifique-se de que uma rede HostOnly `vboxnet0` está criada no VirtualBox, sob o menu `Arquivo > Host Network Manager`.
 
-<img src="./images/vbox-net.png" alt="Importar Appliance" width="500" align="middle">
+<p align="center">
+    <img src="./images/vbox-net.png" alt="Importar Appliance" width="500" align="middle">
+</p>
