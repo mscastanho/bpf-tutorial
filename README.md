@@ -15,7 +15,7 @@ O conteúdo deste repositório está dividido da seguinte forma:
 
 Uma máquina virtual foi especialmente desenvolvida para este tutorial, contendo todo o código e ferramentas necessárias para a execução de cada passo.
 
-- [Download VirtualBox VM](http://dcc.ufmg.br/~matheus.castanho/minicurso-ebpf-sbrc2019.rar) (user: *ebpf*, senha: *ebpf*)
+- [Download VirtualBox VM](http://www.winet.dcc.ufmg.br/lib/exe/fetch.php?media=cursos:minicurso_ebpf:minicurso-ebpf-sbrc2019.rar) (user: *ebpf*, senha: *ebpf*)
 
 A máquina virtual está equipada com os seguintes itens:
 - kernel v5.0.0
