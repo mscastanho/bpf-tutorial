@@ -411,3 +411,74 @@ Com os programas eBPF carregados no kernel e com algum tráfego fluindo pela int
             <idle>-0     [000] ..s. 13704.450216: 0: [XDP] metadado = 42
 
 Pelas mensagens geradas podemos ver que o metadado adicionado no gancho XDP pôde ser recebido pelo programa no gancho TC, efetivamente compartilhando informação entre as duas camadas da pilha do kernel.
+
+## Exemplo 4: Adicição de um novo mapa ao BPFabric
+
+Local: Arquivos `foo_map.c`, `foo_map.h`, `foo_counter.c` e `foo_counter.py` localizados no diretório `./exemplos/BPFabric`.
+
+Este exemplo mostra os passos necessários para se incluir um novo mapa ao BPFabric. 
+
+O mapa a ser incluído, referenciado aqui como *FOO\_MAP*, é bem simples, sendo ele composto apenas de um contador inteiro de 32 bits. Sua definição pode ser encontrada nos arquivos `foo_map.h` e `foo_map.c`. No arquivo `foo_map.h` encontramos as assinaturas das funções definidas para o *FOO\_MAP*, enquanto no `foo_map.c` encontramos as implementações delas. São elas:
+* `foo_map_alloc`: responsável pela alocação da estrutura do mapa, ou seja, do contador.
+
+* `foo_map_free`: responsável pela desalocação da estrutura do mapa.
+
+* `foo_map_update_elem`: responsável por incrementar o valor do contador em 1 a cada chamada.
+
+* `foo_map_lookup_elem`: responsável por recuperar o valor do contador.
+
+O primeiro passo para incluir o *FOO\_MAP* é adicionar seu código fonte (`foo_map.c` e `foo_map.h`) ao diretório do BPFabric no qual se encontram as definições dos mapas disponíveis (`~/BPFabric/bpfmap`). 
+
+O segundo passo consiste em adicionar uma referência ao mapa à lista dos tipos de mapas disponíveis. Isto é feito através da adição de uma nova opção ao enum `bpf_map_type` (definida no arquivo `~/BPFabric/bpfmap/bpfmap.h`). O nome desta opção será posteriormente utilizado para se referir ao novo mapa. Se o referenciarmos como `BPF_MAP_TYPE_FOO` e adicionarmos essa opção ao `bpf_map_type`, o enum deverá ficar da seguinte forma:
+
+```c
+enum bpf_map_type {
+    BPF_MAP_TYPE_UNSPEC,
+    BPF_MAP_TYPE_HASH,
+    BPF_MAP_TYPE_ARRAY,
+    BPF_MAP_TYPE_FOO,
+};
+```
+
+No próximo passo mapeamos as referências das funções do *FOO\_MAP* para as operações oferecidas pela máquina eBPF do BPFabric. O mapeamento é feito editando o arquivo `~/BPFabric/bpfmap/bpfmap.c`. Primeiro precisamos incluir nele o arquivo header do novo mapa (`#include "foo_map.h"`) para que as referências possam ser encontradas. Em seguida devemos localizar o vetor `bpf_map_types` no arquivo. Os elementos desse vetor são do tipo struct `bpf_map_ops` (definida no arquivo `~/BPFabric/bpfmap/bpfmap.h`), que define as operações disponíveis para um mapa. O mapeamento das funções do *FOO\_MAP* deve adicionar um novo elemento ao vetor e associar as funções definidas no arquivo `foo_map.h` aos campos da struct `bpf_map_ops`. Uma forma de fazer isso é adicionar o seguinte elemento:
+
+```c
+[BPF_MAP_TYPE_FOO] = {
+    .map_alloc = foo_map_alloc,
+    .map_free  = foo_map_free,
+    .map_lookup_elem = foo_map_lookup_elem,
+    .map_update_elem = foo_map_update_elem,
+}
+```
+
+É possível observar que, diferente dos demais elementos, esse não atribui referências para os campos `map_get_next_key` e `map_delete_elem`. Isto acontece pois não definimos funções para essas operações. Dessa forma, o usuário não terá acesso a essas operações quando utilizar esse mapa.
+
+Movendo para o próximo passo, precisamos adicionar a referência aos arquivos fonte para que o *FOO\_MAP* possa ser compilado. Isto é feito editando o arquivo `~/BPFabric/bpfmap/Makefile` e adicionando o nome do arquivo fonte (`foo_map`) na variável `bpfmap_mods`:
+
+```
+bpfmap_mods += foo_map
+```
+
+Por último, precisamos adicionar uma referência global ao mapa. Uma forma de se fazer isto é adicionar uma definição ao arquivo `BPFabric/includes/ebpf_consts.h`. Esta definição deve relacionar o nome do mapa (`BPF_MAP_TYPE_FOO`) à sua posição no enum `bpf_map_type` (no caso 3). Assim, basta incluir a seguinte linha ao arquivo:
+```c
+#define BPF_MAP_TYPE_FOO 3
+```
+
+[adicionar sequencia para executar exemplo]
+
+
+**Extras**:
+
+...
+
+
+
+
+
+
+
+
+
+
+
+
