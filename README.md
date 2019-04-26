@@ -495,6 +495,22 @@ Ao executar, o controlador primeiro se encarregará de enviar o código compilad
 
 Para verificar que a aplicação funciona corretamente, execute um comando de `ping` entre os *hosts* no Mininet (por exemplo `h1 ping h2`) e observe que o controlador imprime no terminal a quantidade de pacotes que passaram pelo switch.
 
+    ebpf@sbrc2019:~/BPFabric/controller$ ./foo_counter.py 
+    Connection from switch 00000001, version 1
+    Installing the eBPF ELF
+    (1,)
+    (2,)
+    (3,)
+    (4,)
+    (5,)
+    (6,)
+    (7,)
+    (8,)
+    (9,)
+    (10,)
+    (11,)
+    ...
+    (restante da saída omitido)
 
 
 
