@@ -56,8 +56,8 @@ A máquina foi configurada com 2 interfaces de rede, uma no modo NAT (`eth0` - a
 ## Compilando os exemplos do kernel
 
 O código fonte do kernel apresenta diversos programas de exemplo, disponíveis nos seguintes diretórios:
-    - `samples/bpf`
-    - `tools/testing/selftests/bpf`
+- `samples/bpf`
+- `tools/testing/selftests/bpf`
 
 Neste minicurso apresentaremos dois exemplos presentes na pasta `samples/bpf`. Para compilá-los, execute os seguintes comandos:
 
