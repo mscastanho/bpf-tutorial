@@ -412,7 +412,7 @@ Com os programas eBPF carregados no kernel e com algum tráfego fluindo pela int
 
 Pelas mensagens geradas podemos ver que o metadado adicionado no gancho XDP pôde ser recebido pelo programa no gancho TC, efetivamente compartilhando informação entre as duas camadas da pilha do kernel.
 
-## Exemplo 5: Adicição de um novo mapa ao BPFabric
+## Exemplo 5: Adição de um novo mapa ao BPFabric
 
 Local: Arquivos `foo_map.c`, `foo_map.h`, `foo_counter.c` e `foo_counter.py` localizados no diretório `./exemplos/BPFabric`.
 
@@ -471,7 +471,7 @@ cd ~/BPFabric
 make
 ```
 
-**Teste**: A fim de verificar se o procedimento de inclusão do mapa foi bem sucedido, podemos executar um exemplo que utilize o *FOO\_MAP*. Os arquivos `foo_counter.c` e `foo_counter.py` foram preparados exatamente para isto. Enquanto o primeiro arquivo define o comportamento do switch, o segundo é representa a aplicação controladora. 
+**Teste**: A fim de verificar se o procedimento de inclusão do mapa foi bem sucedido, podemos executar um exemplo que utilize o *FOO\_MAP*. Os arquivos `foo_counter.c` e `foo_counter.py` foram preparados exatamente para isto. Enquanto o primeiro arquivo define o comportamento do switch, o segundo representa a aplicação controladora. 
 O programa definido em `foo_counter.c` utiliza a função de atualização do *FOO\_MAP* para incrementar o contador do mapa a cada novo pacote trafegado na rede. Ele também envia ao controlador o valor corrente do contador a cada novo pacote.
 
 Para podermos executar o exemplo, o arquivo `foo_counter.c` deve ser adicionado ao diretório `~/BPFabric/examples` e o arquivo `foo_counter.py` ao diretório `~/BPFabric/controller`.
@@ -482,7 +482,7 @@ cd ~/BPFabric/examples
 make
 ```
 
-everá ser gerado um arquivo objeto `foo_counter.o`. Em seguida, acesse a pasta `~/BPFabric/mininet` e execute o script `1sw_topo.py`. Ele deverá criar uma rede de testes com um switch e 2 *hosts* e então dar acesso à interface de comandos do Mininet.
+Deverá ser gerado um arquivo objeto `foo_counter.o`. Em seguida, acesse a pasta `~/BPFabric/mininet` e execute o script `1sw_topo.py`. Ele deverá criar uma rede de testes com um switch e 2 *hosts* e então dar acesso à interface de comandos do Mininet.
 
 Com a rede já criada, execute o controlador através dos comandos
 
