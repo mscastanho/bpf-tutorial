@@ -412,7 +412,7 @@ Com os programas eBPF carregados no kernel e com algum tráfego fluindo pela int
 
 Pelas mensagens geradas podemos ver que o metadado adicionado no gancho XDP pôde ser recebido pelo programa no gancho TC, efetivamente compartilhando informação entre as duas camadas da pilha do kernel.
 
-## Exemplo 4: Adicição de um novo mapa ao BPFabric
+## Exemplo 5: Adicição de um novo mapa ao BPFabric
 
 Local: Arquivos `foo_map.c`, `foo_map.h`, `foo_counter.c` e `foo_counter.py` localizados no diretório `./exemplos/BPFabric`.
 
@@ -464,12 +464,36 @@ Por último, precisamos adicionar uma referência global ao mapa. Uma forma de s
 #define BPF_MAP_TYPE_FOO 3
 ```
 
-[adicionar sequencia para executar exemplo]
+Agora basta compilar o código adicionado. Para isto, basta executar os seguintes comandos:
 
+```
+cd ~/BPFabric
+make
+```
 
-**Extras**:
+**Teste**: A fim de verificar se o procedimento de inclusão do mapa foi bem sucedido, podemos executar um exemplo que utilize o *FOO\_MAP*. Os arquivos `foo_counter.c` e `foo_counter.py` foram preparados exatamente para isto. Enquanto o primeiro arquivo define o comportamento do switch, o segundo é representa a aplicação controladora. 
+O programa definido em `foo_counter.c` utiliza a função de atualização do *FOO\_MAP* para incrementar o contador do mapa a cada novo pacote trafegado na rede. Ele também envia ao controlador o valor corrente do contador a cada novo pacote.
 
-...
+Para podermos executar o exemplo, o arquivo `foo_counter.c` deve ser adicionado ao diretório `~/BPFabric/examples` e o arquivo `foo_counter.py` ao diretório `~/BPFabric/controller`.
+Deve-se então compilar o programa para o switch fazendo:
+
+```
+cd ~/BPFabric/examples
+make
+```
+
+everá ser gerado um arquivo objeto `foo_counter.o`. Em seguida, acesse a pasta `~/BPFabric/mininet` e execute o script `1sw_topo.py`. Ele deverá criar uma rede de testes com um switch e 2 *hosts* e então dar acesso à interface de comandos do Mininet.
+
+Com a rede já criada, execute o controlador através dos comandos
+
+```
+cd ~/BPFabric/controller/
+python foo_counter.py
+```
+
+Ao executar, o controlador primeiro se encarregará de enviar o código compilado (`foo_counter.o`) para o switch, que deverá então ter seu comportamento definido por ele. Depois ficará esperando por notificações do switch sobre o valor do contador.
+
+Para verificar que a aplicação funciona corretamente, execute um comando de `ping` entre os *hosts* no Mininet (por exemplo `h1 ping h2`) e observe que o controlador imprime no terminal a quantidade de pacotes que passaram pelo switch.
 
 
 
