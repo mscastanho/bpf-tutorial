@@ -22,7 +22,7 @@ A máquina virtual está equipada com os seguintes itens:
 - iproute2-ss190319
 - llvm 6.0.0
 - bpftool
-    
+
 Além de uma cópia deste repositório, o diretório `/home/ebpf` apresenta cópias locais dos seguintes projetos:
 - [Linux kernel net-next](https://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git)
 - [BPFabric](https://github.com/UofG-netlab/BPFabric)
@@ -141,7 +141,7 @@ A saída desse comando deve ser um print do código HTML da página em questão.
 
 Carregue utilizando a ferramenta `ip`:
 
-    sudo ip -force link set dev eth0 xdp obj portfilter.o sec pfilter
+    sudo ip -force link set dev eth0 xdp obj portfilter.o sec filter
 
 Agora tente novamente acessar a mesma página:
 
@@ -163,7 +163,7 @@ Diferentemente dos exemplos anteriores, aqui o programa eBPF é carregado no ker
 
 Após a compilação, o diretório `samples/bpf/` conterá o arquivo executável `xdp1`, gerado após a compilação de `xdp_user.c`.
 
-    ebpf@sbrc2019:~/net-next/samples/bpf$ ./xdp1 
+    ebpf@sbrc2019:~/net-next/samples/bpf$ ./xdp1
     usage: xdp1 [OPTS] IFACE
 
     OPTS:
@@ -187,7 +187,7 @@ Em um outro terminal, faça alguma requisição utilizando as ferramentas `ping`
 
 É possível analisar o conteúdo do mapa utilizando a ferramenta `bpftool`, já compilada e instalada na VM fornecida. Para isso, primeiramente verificamos os programas eBPF carregados no sistema:
 
-    sudo bpftool prog show 
+    sudo bpftool prog show
 
 Output:
 
@@ -230,7 +230,7 @@ Output:
     key:
     02 00 00 00
     value (CPU 00): 00 00 00 00 00 00 00 00
-    ... 
+    ...
     (restante da saída omitido)
 
 O mapa utilizado é do tipo `BPF_MAP_TYPE_PERCPU_ARRAY`. Como o nome indica, ele apresenta um vetor por CPU utilizada. Na declaração do mapa, o número de elementos foi definido como `256`, portanto a saída do comando `bpftool` acima mostra 256 entradas correspondentes à CPU 0, única da VM.
@@ -358,7 +358,7 @@ Por fim, recompilamos o exemplo:
 
 Em seguida, basta executarmos o script `xdp2skb_meta.sh` para carregarmos os programas no kernel:
 
-    ebpf@sbrc2019:~/net-next/samples/bpf$ sudo ./xdp2skb_meta.sh 
+    ebpf@sbrc2019:~/net-next/samples/bpf$ sudo ./xdp2skb_meta.sh
 
     Usage: ./xdp2skb_meta.sh [-vfh] --dev ethX
     -d | --dev     :             Network device (required)
@@ -416,7 +416,7 @@ Pelas mensagens geradas podemos ver que o metadado adicionado no gancho XDP pôd
 
 Local: Arquivos `foo_map.c`, `foo_map.h`, `foo_counter.c` e `foo_counter.py` localizados no diretório `./exemplos/BPFabric`.
 
-Este exemplo mostra os passos necessários para se incluir um novo mapa ao BPFabric. 
+Este exemplo mostra os passos necessários para se incluir um novo mapa ao BPFabric.
 
 O mapa a ser incluído, referenciado aqui como *FOO\_MAP*, é bem simples, sendo ele composto apenas de um contador inteiro de 32 bits. Sua definição pode ser encontrada nos arquivos `foo_map.h` e `foo_map.c`. No arquivo `foo_map.h` encontramos as assinaturas das funções definidas para o *FOO\_MAP*, enquanto no `foo_map.c` encontramos as implementações delas. São elas:
 * `foo_map_alloc`: responsável pela alocação da estrutura do mapa, ou seja, do contador.
@@ -427,7 +427,7 @@ O mapa a ser incluído, referenciado aqui como *FOO\_MAP*, é bem simples, sendo
 
 * `foo_map_lookup_elem`: responsável por recuperar o valor do contador.
 
-O primeiro passo para incluir o *FOO\_MAP* é adicionar seu código fonte (`foo_map.c` e `foo_map.h`) ao diretório do BPFabric no qual se encontram as definições dos mapas disponíveis (`~/BPFabric/bpfmap`). 
+O primeiro passo para incluir o *FOO\_MAP* é adicionar seu código fonte (`foo_map.c` e `foo_map.h`) ao diretório do BPFabric no qual se encontram as definições dos mapas disponíveis (`~/BPFabric/bpfmap`).
 
 O segundo passo consiste em adicionar uma referência ao mapa à lista dos tipos de mapas disponíveis. Isto é feito através da adição de uma nova opção ao enum `bpf_map_type` (definida no arquivo `~/BPFabric/bpfmap/bpfmap.h`). O nome desta opção será posteriormente utilizado para se referir ao novo mapa. Se o referenciarmos como `BPF_MAP_TYPE_FOO` e adicionarmos essa opção ao `bpf_map_type`, o enum deverá ficar da seguinte forma:
 
@@ -471,7 +471,7 @@ cd ~/BPFabric
 make
 ```
 
-**Teste**: A fim de verificar se o procedimento de inclusão do mapa foi bem sucedido, podemos executar um exemplo que utilize o *FOO\_MAP*. Os arquivos `foo_counter.c` e `foo_counter.py` foram preparados exatamente para isto. Enquanto o primeiro arquivo define o comportamento do switch, o segundo representa a aplicação controladora. 
+**Teste**: A fim de verificar se o procedimento de inclusão do mapa foi bem sucedido, podemos executar um exemplo que utilize o *FOO\_MAP*. Os arquivos `foo_counter.c` e `foo_counter.py` foram preparados exatamente para isto. Enquanto o primeiro arquivo define o comportamento do switch, o segundo representa a aplicação controladora.
 O programa definido em `foo_counter.c` utiliza a função de atualização do *FOO\_MAP* para incrementar o contador do mapa a cada novo pacote trafegado na rede. Ele também envia ao controlador o valor corrente do contador a cada novo pacote.
 
 Para podermos executar o exemplo, o arquivo `foo_counter.c` deve ser adicionado ao diretório `~/BPFabric/examples` e o arquivo `foo_counter.py` ao diretório `~/BPFabric/controller`.
@@ -495,7 +495,7 @@ Ao executar, o controlador primeiro se encarregará de enviar o código compilad
 
 Para verificar que a aplicação funciona corretamente, execute um comando de `ping` entre os *hosts* no Mininet (por exemplo `h1 ping h2`) e observe que o controlador imprime no terminal a quantidade de pacotes que passaram pelo switch.
 
-    ebpf@sbrc2019:~/BPFabric/controller$ ./foo_counter.py 
+    ebpf@sbrc2019:~/BPFabric/controller$ ./foo_counter.py
     Connection from switch 00000001, version 1
     Installing the eBPF ELF
     (1,)
@@ -511,14 +511,3 @@ Para verificar que a aplicação funciona corretamente, execute um comando de `p
     (11,)
     ...
     (restante da saída omitido)
-
-
-
-
-
-
-
-
-
-
-

@@ -59,7 +59,7 @@ static __always_inline int process_packet(struct xdp_md *ctx, __u64 off){
 }
 
 
-SEC("portfilter")
+SEC("filter")
 int pfilter(struct xdp_md *ctx){
 
 	void *data_end = (void *)(long)ctx->data_end;
