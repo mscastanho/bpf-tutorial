@@ -135,7 +135,7 @@ Similarmente ao exemplo anterior, compile o programa:
 
 Antes de carregar o programa, teste o acesso a uma página web:
 
-    curl https://www.google.com
+    curl http://www.google.com
 
 A saída desse comando deve ser um print do código HTML da página em questão.
 
@@ -145,7 +145,7 @@ Carregue utilizando a ferramenta `ip`:
 
 Agora tente novamente acessar a mesma página:
 
-    curl https://www.google.com
+    curl http://www.google.com
 
 Por conta do programa *portfilter.o* o os pacotes serão descartados assim que chegarem à interface `eth0`, impedindo o acesso.
 
