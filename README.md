@@ -33,25 +33,37 @@ Além de uma cópia deste repositório, o diretório `/home/ebpf` apresenta cóp
 
 Os passos a seguir foram testados com o VirtualBox 5.2.18 no Ubuntu.
 
-Após fazer o download da imagem, descompacte o arquivo `.rar`. O arquivo resultante será `minicurso-ebpf-sbrc2019.ova`.
+Após fazer o download da imagem, descompacte o arquivo `.rar`. O arquivo resultante será `minicurso-ebpf-sbrc2019.vdi`.
 
-Para importar a VM, acesse o menu `Arquivo > Importar Appliance` e selecione o arquivo `.ova` descompactado.
-
-<p align="center">
-    <img src="./images/vbox-import.png" alt="Importar Appliance" width="500" align="middle">
-</p>
-
-Em seguida, o VirtualBox permitirá modificações na especificação da máquina, como quantidade de memória RAM (padrão: 4GB).
+Crie uma nova VM a partir do botão `New` e escolha um nome para a máquina:
 
 <p align="center">
-    <img src="./images/vbox-import-2.png" alt="Importar Appliance" width="500" align="middle">
+    <img src="./images/vbox-create.png" alt="Criar máquina virtual" width="500" align="middle">
 </p>
 
-A máquina foi configurada com 2 interfaces de rede, uma no modo NAT (`eth0` - acesso à internet) e outra no modo HostOnly (`eth1` - acesso por SSH). Após a importação, certifique-se de que uma rede HostOnly `vboxnet0` está criada no VirtualBox, sob o menu `Arquivo > Host Network Manager`.
+Em seguida, o VirtualBox permitirá modificações na especificação da máquina, como quantidade de memória RAM (esse valor pode ser modificado posteriormente).
 
 <p align="center">
-    <img src="./images/vbox-net.png" alt="Importar Appliance" width="500" align="middle">
+    <img src="./images/vbox-memory.png" alt="Ajustar máquina" width="500" align="middle">
 </p>
+
+Na próxima etapa o VirtualBox perguntará a opção de disco de rígido desejada. Aqui é preciso utilizar um disco já existente, que corresponde à imagem baixada:
+
+<p align="center">
+    <img src="./images/vbox-disk.png" alt="Importar disco" width="500" align="middle">
+</p>
+
+
+Por fim, a máquina deve ser configurada com 2 interfaces de rede, uma no modo NAT (`eth0` - acesso à internet) e outra no modo HostOnly (`eth1` - acesso por SSH). Após a criação, clique com o botão direito no nome da VM e selecione `Configurações`. Na aba `Rede` certifique-se de que essas duas interfaces estão criadas:
+
+<p align="center">
+    <img src="./images/vbox-nat.png" alt="Importar Appliance" width="500" align="middle">
+    </br>
+    </br>
+    <img src="./images/vbox-hostonly.png" alt="Importar Appliance" width="500" align="middle">
+</p>
+
+Pronto! A máquina está 100% preparada para o tutorial.
 
 ## Compilando os exemplos do kernel
 
