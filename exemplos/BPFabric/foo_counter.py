@@ -26,7 +26,7 @@ class SimpleSwitchApplication(eBPFCoreApplication):
     @set_event_handler(Header.NOTIFY)
     def notify_event(self, connection, pkt):
         num_packets = struct.unpack('<I', pkt.data)
-        print (num_packets)
+        print ("contador: {0:4d} pacote(s)".format(num_packets[0]))
 
 
 if __name__ == '__main__':
